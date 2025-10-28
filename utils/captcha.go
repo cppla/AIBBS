@@ -2,16 +2,19 @@ package utils
 
 import (
 	"image/color"
+	"sync"
 
 	"github.com/mojocn/base64Captcha"
 )
 
 var (
-	captchaStore = base64Captcha.DefaultMemStore
+	captchaStore base64Captcha.Store = base64Captcha.DefaultMemStore
+	captchaOnce  sync.Once
 )
 
 // GenerateCaptcha creates a captcha and returns (id, dataURI) for frontend to display.
 func GenerateCaptcha() (string, string, error) {
+	ensureCaptchaStore()
 	// Use a simple digit captcha: width 120, height 40, length 5
 	driver := base64Captcha.NewDriverDigit(40, 120, 5, 0.7, 80)
 	// Optional style: for string captcha
@@ -23,6 +26,7 @@ func GenerateCaptcha() (string, string, error) {
 
 // VerifyCaptcha verifies the provided answer; it consumes the captcha on success.
 func VerifyCaptcha(id, answer string) bool {
+	ensureCaptchaStore()
 	if id == "" || answer == "" {
 		return false
 	}
@@ -31,8 +35,17 @@ func VerifyCaptcha(id, answer string) bool {
 
 // VerifyCaptchaNoConsume verifies without consuming the stored answer.
 func VerifyCaptchaNoConsume(id, answer string) bool {
+	ensureCaptchaStore()
 	if id == "" || answer == "" {
 		return false
 	}
 	return captchaStore.Verify(id, answer, false)
+}
+
+func ensureCaptchaStore() {
+	captchaOnce.Do(func() {
+		if GetRedis() != nil {
+			captchaStore = NewRedisCaptchaStore(10 * 60 * 1e9) // 10 minutes
+		}
+	})
 }

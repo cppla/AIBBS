@@ -1,8 +1,6 @@
 package main
 
 import (
-	"time"
-
 	"github.com/cppla/aibbs/config"
 	"github.com/cppla/aibbs/models"
 	"github.com/cppla/aibbs/routes"
@@ -17,13 +15,10 @@ func main() {
 		panic(err)
 	}
 
-	// Auto-migrate all models including SignIn and PageView
-	db := config.InitDatabase(&models.User{}, &models.Post{}, &models.Comment{}, &models.SignIn{}, &models.PageView{}, &models.UploadedFile{})
+	// Auto-migrate models (no local upload tracking since using external storage)
+	db := config.InitDatabase(&models.User{}, &models.Post{}, &models.Comment{}, &models.SignIn{}, &models.PageView{})
 
 	r := routes.SetupRouter(db)
-
-	// Start background cleanup for expired uploads (best-effort)
-	utils.StartUploadCleaner(5 * time.Minute)
 
 	utils.Sugar.Infof("Starting server on port %s (graceful)", cfg.AppPort)
 	if err := utils.GraceServer(":"+cfg.AppPort, r); err != nil {

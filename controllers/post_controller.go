@@ -1,10 +1,13 @@
 package controllers
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -503,7 +506,7 @@ func (p *PostController) DeletePost(ctx *gin.Context) {
 // UploadAttachment handles file uploads for posts.
 func (p *PostController) UploadAttachment(ctx *gin.Context) {
 	// Auth check
-	userID, ok := getUserID(ctx)
+	_, ok := getUserID(ctx)
 	if !ok {
 		utils.Error(ctx, http.StatusUnauthorized, 40113, "unauthorized")
 		return
@@ -527,78 +530,73 @@ func (p *PostController) UploadAttachment(ctx *gin.Context) {
 		return
 	}
 
-	now := time.Now()
-	year := now.Format("2006")
-	month := now.Format("01")
-	day := now.Format("02")
-	baseDir := filepath.Join(".", "static", "uploads", year, month, day)
-	if err := os.MkdirAll(baseDir, 0755); err != nil {
-		utils.Error(ctx, http.StatusInternalServerError, 50030, "failed to create upload directory")
-		return
+	// Forward to external object storage service
+	// POST https://api.cloudcpp.com/image  form field: f=@<filename>
+	originalName := filepath.Base(header.Filename)
+	if originalName == "." || originalName == "" {
+		originalName = fmt.Sprintf("file_%d", time.Now().UnixNano())
 	}
 
-	// Sanitize filename and ensure uniqueness
-	fname := filepath.Base(header.Filename)
-	if fname == "." || fname == "" {
-		fname = fmt.Sprintf("file_%d", now.UnixNano())
-	}
-	// prevent collisions: prefix with timestamp and user id
-	safeName := fmt.Sprintf("%d_%d_%s", now.UnixNano(), userID, fname)
-	dstPath := filepath.Join(baseDir, safeName)
-
-	// Save with limit check
-	out, err := os.Create(dstPath)
+	// Build multipart form in-memory up to maxSize; enforce limit via LimitedReader
+	var buf bytes.Buffer
+	mw := multipart.NewWriter(&buf)
+	fw, err := mw.CreateFormFile("f", originalName)
 	if err != nil {
-		utils.Error(ctx, http.StatusInternalServerError, 50031, "failed to save file")
+		utils.Error(ctx, http.StatusInternalServerError, 50031, "failed to build upload form")
 		return
 	}
-	defer out.Close()
-
-	// Enforce 50MB by limited reader
 	lr := &io.LimitedReader{R: file, N: maxSize + 1}
-	written, err := io.Copy(out, lr)
+	written, err := io.Copy(fw, lr)
 	if err != nil {
-		// cleanup
-		_ = out.Close()
-		_ = os.Remove(dstPath)
-		utils.Error(ctx, http.StatusInternalServerError, 50032, "failed to write file")
+		utils.Error(ctx, http.StatusInternalServerError, 50032, "failed to read upload data")
 		return
 	}
 	if written > maxSize {
-		_ = out.Close()
-		_ = os.Remove(dstPath)
 		utils.Error(ctx, http.StatusBadRequest, 40032, "file size exceeds 50MB")
 		return
 	}
-
-	// Build public URL
-	relURL := fmt.Sprintf("/static/uploads/%s/%s/%s/%s", year, month, day, safeName)
-	// Record for persistent cleanup per configuration
-	conf := config.Get()
-	ttlMinutes := conf.UploadsSelfDestructMinutes
-	if ttlMinutes <= 0 {
-		ttlMinutes = 60
+	if err := mw.Close(); err != nil {
+		utils.Error(ctx, http.StatusInternalServerError, 50031, "failed to finalize form")
+		return
 	}
-	expireAt := time.Now().Add(time.Duration(ttlMinutes) * time.Minute)
-	absPath, _ := filepath.Abs(dstPath)
-	// Non-blocking best-effort record; ignore error to not affect upload success
-	go func(absPath, url string, exp time.Time) {
-		defer func() { _ = recover() }()
-		db := config.DB()
-		if db != nil {
-			_ = db.Create(&models.UploadedFile{FilePath: absPath, URL: url, ExpireAt: exp}).Error
+
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, "https://api.cloudcpp.com/image", &buf)
+	if err != nil {
+		utils.Error(ctx, http.StatusInternalServerError, 50033, "failed to create request")
+		return
+	}
+	req.Header.Set("Content-Type", mw.FormDataContentType())
+
+	httpClient := &http.Client{Timeout: 30 * time.Second}
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		utils.Error(ctx, http.StatusBadGateway, 50230, "upload service unavailable")
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		utils.Error(ctx, http.StatusBadGateway, 50231, "upload service responded with error")
+		return
+	}
+
+	var result map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		utils.Error(ctx, http.StatusBadGateway, 50232, "invalid response from upload service")
+		return
+	}
+
+	// The response maps original filename to URL, plus an extra key 'xad'.
+	urlVal := ""
+	if v, ok := result[originalName]; ok {
+		if s, ok2 := v.(string); ok2 {
+			urlVal = s
 		}
-	}(absPath, relURL, expireAt)
-
-	// Also schedule in-memory fallback deletion if enabled
-	if conf.UploadsSelfDestructEnabled {
-		go func(path string, minutes int) {
-			time.Sleep(time.Duration(minutes) * time.Minute)
-			_ = os.Remove(path)
-		}(absPath, ttlMinutes)
 	}
-
-	utils.Success(ctx, gin.H{"url": relURL})
+	if strings.TrimSpace(urlVal) == "" {
+		utils.Error(ctx, http.StatusBadGateway, 50233, "upload service did not return file url")
+		return
+	}
+	utils.Success(ctx, gin.H{"url": urlVal})
 }
 
 func parsePagination(pageStr, sizeStr string) (int, int) {

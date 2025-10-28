@@ -1,82 +1,48 @@
 package middleware
 
 import (
-	"sync"
+	"context"
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/time/rate"
 
 	"github.com/cppla/aibbs/config"
 	"github.com/cppla/aibbs/utils"
 )
 
-type rateLimiter struct {
-	limiter *rate.Limiter
-	expires time.Time
-	mu      sync.Mutex
-}
-
-var (
-	limiters   = map[string]*rateLimiter{}
-	limitersMu sync.Mutex
-)
-
-// RateLimitMiddleware applies a simple IP based rate limiter using a token bucket.
+// RateLimitMiddleware applies an IP-based per-minute limit using Redis counters.
+// It is stateless across instances and safe behind load balancers.
 func RateLimitMiddleware() gin.HandlerFunc {
 	cfg := config.Get()
-	r := rate.Every(time.Minute / time.Duration(max(cfg.RateLimitPerMinute, 1)))
-	burst := max(cfg.RateLimitPerMinute/2, 1)
+	limit := max(cfg.RateLimitPerMinute, 1)
 
 	return func(ctx *gin.Context) {
-		ip := ctx.ClientIP()
-		limiter := getLimiter(ip, r, burst)
-
-		limiter.mu.Lock()
-		allowed := limiter.limiter.Allow()
-		limiter.mu.Unlock()
-
-		if !allowed {
-			utils.Error(ctx, 429, 42901, "rate limit exceeded")
-			ctx.Abort()
+		rc := utils.GetRedis()
+		if rc == nil {
+			// Fail-open if Redis not available
+			ctx.Next()
 			return
 		}
+	// Use the shared helper from country_filter.go in the same package
+	ip := effectiveClientIP(ctx)
+		key := fmt.Sprintf("ratelimit:%s:%s", ip, time.Now().Format("200601021504")) // per-minute window
 
+		c, cancel := context.WithTimeout(ctx.Request.Context(), 500*time.Millisecond)
+		defer cancel()
+		n, err := rc.Incr(c, key).Result()
+		if err == nil {
+			if n == 1 {
+				_ = rc.Expire(c, key, time.Minute).Err()
+			}
+			if n > int64(limit) {
+				utils.Error(ctx, 429, 42901, "rate limit exceeded")
+				ctx.Abort()
+				return
+			}
+		}
 		ctx.Next()
 	}
 }
 
-func getLimiter(key string, limit rate.Limit, burst int) *rateLimiter {
-	limitersMu.Lock()
-	defer limitersMu.Unlock()
-
-	cleanupExpiredLimitersLocked()
-
-	if limiter, ok := limiters[key]; ok {
-		limiter.expires = time.Now().Add(5 * time.Minute)
-		return limiter
-	}
-
-	limiter := &rateLimiter{
-		limiter: rate.NewLimiter(limit, burst),
-		expires: time.Now().Add(5 * time.Minute),
-	}
-	limiters[key] = limiter
-	return limiter
-}
-
-func cleanupExpiredLimitersLocked() {
-	now := time.Now()
-	for key, limiter := range limiters {
-		if now.After(limiter.expires) {
-			delete(limiters, key)
-		}
-	}
-}
-
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
+func max(a, b int) int { if a > b { return a }; return b }

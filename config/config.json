@@ -8,9 +8,7 @@
     "AllowedCountry": ["中国", "美国", "日本", "新加坡"],
     "DenyCountry": ["印度"],
     "OAuthRedirectBase": "http://localhost:8080",
-    "AdminUsernames": ["root", "admin"],
-    "UploadsSelfDestructEnabled": true,
-    "UploadsSelfDestructMinutes": 60
+    "AdminUsernames": ["root", "admin"]
   },
   "database": {
     "DBHost": "127.0.0.1",

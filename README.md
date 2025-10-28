@@ -198,7 +198,7 @@ Content-Type: application/json
 - `comments`：帖子评论，关联帖子与用户
 - `sign_ins`：每日签到记录（奖励积分、连续天数）
 -	`page_views`：按天与路径聚合的页面访问统计
-- `uploaded_files`：上传文件记录（文件路径、公开 URL、过期时间），用于定期清理自焚文件
+-（已移除）上传文件本地记录：现已改为外部对象存储，不在本地数据库保存上传文件元数据。
 
  建表脚本位于 `scripts/init.sql`，可直接导入。首次启动若检测到数据库为空，服务会提示执行 `python3 scripts/init_db.py` 并退出；避免在未初始化时误操作数据库。
 
@@ -210,24 +210,22 @@ Content-Type: application/json
 - **速率限制**：对登录、发帖、评论、签到等敏感接口施加基于 IP 的限流策略，默认每分钟 60 次，可在 `config/config.json` 或环境变量中配置。
 - **SQL 安全**：统一由 GORM ORM 执行，避免手写 SQL 注入风险。
 
-## 附件上传与自焚配置
+## 附件上传（外部对象存储）
 
-- 前端在发帖/编辑时选择文件会自动上传到本地目录 `/static/uploads/YYYY/MM/DD/`，成功后立即将 URL 插入正文（图片以 Markdown `![alt](url)` 插入，其他类型直接插入 URL）。
+- 现版本将上传转发到外部对象存储服务 `https://api.cloudcpp.com`，服务端仅返回外链 URL，不在本地磁盘/数据库保存文件。
+- 前端在发帖/编辑时选择文件后，后端会以表单字段名 `f` 转发到接口：`POST https://api.cloudcpp.com/image`。
 - 单文件上限：50MB。
-- 自焚机制：上传文件默认在 60 分钟后自动删除。该行为可通过配置调整：
+- 返回示例：
 
-```jsonc
+```json
 {
-	"app": {
-		"UploadsSelfDestructEnabled": true,     // 是否启用自焚
-		"UploadsSelfDestructMinutes": 60        // 自焚分钟数
-	}
+  "xad": "AWS-25刀优惠码, AWS-25刀抵扣码，my.cloudcpp.com",
+  "上传对象.png": "https://api.cloudcpp.com/cache/1983094851307573248.png"
 }
 ```
 
-- 后台有清理器每 5 分钟扫描一次过期文件，确保即使服务重启也能清理过期文件。
- 
-- 展示规则：不再在文章尾部单独展示附件列表，所有附件以正文内插入为准。
+- 后端会从上述响应中取原始文件名对应的 URL，并以 `{ "url": "..." }` 返回给前端；前端将该 URL 插入正文（图片建议用 Markdown 语法 `![alt](url)`，其他类型可直接插入 URL）。
+- 不再存在“本地自焚与清理器”逻辑：历史的本地上传目录与 60 分钟清理已移除；如需生命周期管理，请在对象存储侧或外部任务中实现。
 
 ## 超级管理员与内容删除
 

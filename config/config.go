@@ -80,9 +80,6 @@ type AppConfig struct {
 	RegisterTempBanMinutes        int
 	// Admins
 	AdminUsernames []string
-	// Uploads self-destruct settings
-	UploadsSelfDestructEnabled bool
-	UploadsSelfDestructMinutes int
 }
 
 var cfg AppConfig
@@ -215,13 +212,7 @@ func loadJSONConfig(path string, out *AppConfig) error {
 		if list := getStringSlice(app, "AdminUsernames"); len(list) > 0 {
 			out.AdminUsernames = list
 		}
-		// Uploads self-destruct in app section
-		if b := getBool(app, "UploadsSelfDestructEnabled"); b {
-			out.UploadsSelfDestructEnabled = b
-		}
-		if v := getInt(app, "UploadsSelfDestructMinutes"); v != 0 {
-			out.UploadsSelfDestructMinutes = v
-		}
+		// (removed) uploads self-destruct settings
 	}
 
 	// gin section (backward compatibility)
@@ -439,17 +430,7 @@ func loadJSONConfig(path string, out *AppConfig) error {
 		}
 	}
 
-	// flat uploads self-destruct
-	if v, ok := raw["UploadsSelfDestructEnabled"]; ok {
-		if b, ok := v.(bool); ok {
-			out.UploadsSelfDestructEnabled = b
-		}
-	}
-	if v, ok := raw["UploadsSelfDestructMinutes"]; ok && out.UploadsSelfDestructMinutes == 0 {
-		if f, ok := v.(float64); ok {
-			out.UploadsSelfDestructMinutes = int(f)
-		}
-	}
+	// (removed) flat uploads self-destruct keys
 	if v, ok := raw["OAuthRedirectBase"]; ok && out.OAuthRedirectBase == "" {
 		out.OAuthRedirectBase, _ = v.(string)
 	}
@@ -681,15 +662,7 @@ func applyDefaults(c *AppConfig) {
 	if c.NoticeHTML == "" {
 		c.NoticeHTML = "默认公告内容"
 	}
-	// Upload self-destruct defaults
-	if c.UploadsSelfDestructMinutes == 0 {
-		c.UploadsSelfDestructMinutes = 60
-	}
-	// default enabled
-	// Keep explicit false if user set it; only set true when zero-value (both false and minutes default)
-	if !c.UploadsSelfDestructEnabled {
-		c.UploadsSelfDestructEnabled = true
-	}
+	// (removed) uploads self-destruct defaults
 }
 
 // applyEnvOverrides maps known environment variables onto config values when present.
@@ -873,13 +846,7 @@ func applyEnvOverrides(c *AppConfig) {
 	if v := getEnv("NOTICE_HTML", ""); v != "" {
 		c.NoticeHTML = v
 	}
-	// Upload self-destruct env overrides
-	if v := getEnv("UPLOADS_SELF_DESTRUCT_ENABLED", ""); v != "" {
-		c.UploadsSelfDestructEnabled = v == "true"
-	}
-	if v := getEnv("UPLOADS_SELF_DESTRUCT_MINUTES", ""); v != "" {
-		c.UploadsSelfDestructMinutes = mustParseInt(v)
-	}
+	// (removed) uploads self-destruct env overrides
 }
 
 func mustParseInt(val string) int {

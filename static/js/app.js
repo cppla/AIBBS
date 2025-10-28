@@ -968,7 +968,7 @@ function showCreatePostPage() {
                     </div>
                     <div class="mb-3">
                         <input type="file" class="form-control" id="create-post-attachment" accept="image/*" multiple>
-                        <div class="form-text text-muted" id="attachment-hint">附件1小时后自焚</div>
+                        <div class="form-text text-muted" id="attachment-hint">上传的附件将以外链形式插入正文</div>
                         <div id="attachment-preview" class="mt-2"></div>
                     </div>
                     <button type="submit" class="btn btn-success">提交</button>
@@ -1023,7 +1023,7 @@ function showCreatePostPage() {
             attachmentInput.addEventListener('change', async () => {
                 const files = attachmentInput.files || [];
                 if (!files.length) {
-                    if (hint) hint.textContent = '附件1小时后自焚';
+                    if (hint) hint.textContent = '上传的附件将以外链形式插入正文';
                     return;
                 }
                 if (hint) hint.textContent = '上传中...';
@@ -1044,7 +1044,7 @@ function showCreatePostPage() {
                         notify(`上传失败: ${file.name} - ${e.message}`, 'error', 5000);
                     }
                 }
-                if (hint) hint.textContent = files.length ? `已插入 ${files.length} 个附件` : '附件1小时后自焚';
+                if (hint) hint.textContent = files.length ? `已插入 ${files.length} 个附件` : '上传的附件将以外链形式插入正文';
                 // clear selection
                 attachmentInput.value = '';
             });
@@ -1153,7 +1153,7 @@ async function editPost(postId) {
                     </div>
                     <div class="mb-3">
                         <input type="file" class="form-control" id="edit-post-attachment" accept="image/*" multiple>
-                        <div class="form-text text-muted" id="edit-attachment-hint">附件1小时后自焚</div>
+                        <div class="form-text text-muted" id="edit-attachment-hint">上传的附件将以外链形式插入正文</div>
                         <div id="edit-attachment-preview" class="mt-2"></div>
                     </div>
                     <button type="submit" class="btn btn-warning">保存更改</button>
@@ -1212,7 +1212,7 @@ async function editPost(postId) {
         if (input) {
             input.addEventListener('change', async () => {
                 const files = input.files || [];
-                if (!files.length) { if (hint) hint.textContent = '附件1小时后自焚'; return; }
+                if (!files.length) { if (hint) hint.textContent = '上传的附件将以外链形式插入正文'; return; }
                 if (hint) hint.textContent = '上传中...';
                 preview && (preview.innerHTML = '');
                 for (const file of files) {
@@ -1230,7 +1230,7 @@ async function editPost(postId) {
                         notify(`上传失败: ${file.name} - ${e.message}`, 'error', 5000);
                     }
                 }
-                if (hint) hint.textContent = files.length ? `已插入 ${files.length} 个附件` : '附件1小时后自焚';
+                if (hint) hint.textContent = files.length ? `已插入 ${files.length} 个附件` : '上传的附件将以外链形式插入正文';
                 input.value = '';
             });
         }

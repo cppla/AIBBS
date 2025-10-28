@@ -102,3 +102,6 @@ pnpm-debug.log*
 
 # aibbs
 aibbs 
+
+# config local
+config/config.json
