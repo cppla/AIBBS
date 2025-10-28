@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>注册 - AIBBS</title>
+  <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+  <link rel="alternate icon" href="/static/logo.svg">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+        <img src="/static/logo.svg" alt="AIBBS" width="24" height="24">
+        <span>AIBBS</span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h3 class="card-title mb-3">注册</h3>
+
+            <div id="register-alert" class="alert alert-danger d-none" role="alert"></div>
+
+            <form id="register-form" novalidate>
+              <div class="mb-3">
+                <label for="reg-username" class="form-label">用户名</label>
+                <input type="text" class="form-control" id="reg-username" placeholder="2-15 位，仅中文/英文/数字/横杠-" required>
+                <div class="invalid-feedback">用户名需为2-15位，仅中文/英文/数字/横杠-</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="reg-password" class="form-label">密码</label>
+                <div class="input-group">
+                  <input type="password" class="form-control" id="reg-password" placeholder="6-18 位，仅 a-z A-Z 0-9 - _ ." required>
+                  <button class="btn btn-outline-secondary" type="button" id="toggle-pass" aria-label="显示/隐藏密码">👁</button>
+                </div>
+                <div class="invalid-feedback">密码需为6-18位，且仅包含 a-z A-Z 0-9 和 -_.</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="reg-confirm" class="form-label">确认密码</label>
+                <div class="input-group">
+                  <input type="password" class="form-control" id="reg-confirm" placeholder="再次输入密码" required>
+                  <button class="btn btn-outline-secondary" type="button" id="toggle-confirm" aria-label="显示/隐藏确认密码">👁</button>
+                </div>
+                <div class="invalid-feedback">两次输入的密码不一致</div>
+              </div>
+
+              <div class="mb-3" id="captcha-wrap" style="display:none;">
+                <label class="form-label">验证码</label>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <img id="captcha-image" src="" alt="captcha" style="height:40px; display:none; border:1px solid #ddd; border-radius:4px;">
+                  <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-refresh-captcha">刷新</button>
+                </div>
+                <input type="text" class="form-control" id="captcha-answer" placeholder="请输入验证码">
+                <div class="invalid-feedback">验证码不正确，请重试</div>
+                <input type="hidden" id="captcha-id">
+              </div>
+
+              <div class="mb-3">
+                <label for="reg-email" class="form-label">邮箱</label>
+                <div class="input-group">
+                  <input type="email" class="form-control" id="reg-email" placeholder="用于接收邮箱验证码" required>
+                  <button class="btn btn-outline-secondary" type="button" id="btn-send-code">发送验证码</button>
+                </div>
+                <!-- 邮件发送提示，使用与验证码错误相同的提示块风格（Bootstrap feedback） -->
+                <div id="email-send-feedback-bad" class="invalid-feedback"></div>
+                <div id="email-send-feedback-good" class="valid-feedback"></div>
+              </div>
+
+              <div class="mb-3">
+                <label for="reg-code" class="form-label">邮箱验证码</label>
+                <input type="text" class="form-control" id="reg-code" placeholder="请输入邮箱收到的验证码" required>
+                <div class="invalid-feedback">请输入邮箱验证码</div>
+              </div>
+
+              <button type="submit" class="btn btn-success w-100">注册</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/js/register.js"></script>
+  <script>
+    // 密码小眼睛
+    (function(){
+      const pass = document.getElementById('reg-password');
+      const btn = document.getElementById('toggle-pass');
+      if (btn && pass) btn.addEventListener('click', function(){
+        pass.type = pass.type === 'password' ? 'text' : 'password';
+      });
+      const confirm = document.getElementById('reg-confirm');
+      const btn2 = document.getElementById('toggle-confirm');
+      if (btn2 && confirm) btn2.addEventListener('click', function(){
+        confirm.type = confirm.type === 'password' ? 'text' : 'password';
+      });
+    })();
+  </script>
+</body>
+</html>

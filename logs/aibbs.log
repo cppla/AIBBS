@@ -1,0 +1,5 @@
+{"level":"info","ts":"2025-10-13 16:23:10.752","caller":"aibbs/main.go:23","msg":"Starting server on port 8080"}
+{"level":"fatal","ts":"2025-10-15 15:14:08.286","caller":"aibbs/main.go:25","msg":"server stopped with error: net.Listen error: listen tcp :8080: bind: address already in use"}
+{"level":"fatal","ts":"2025-10-15 15:14:46.019","caller":"aibbs/main.go:25","msg":"server stopped with error: http: Server closed"}
+{"level":"fatal","ts":"2025-10-15 15:16:32.409","caller":"aibbs/main.go:25","msg":"server stopped with error: net.Listen error: listen tcp :8080: bind: address already in use"}
+{"level":"fatal","ts":"2025-10-15 15:16:45.383","caller":"aibbs/main.go:25","msg":"server stopped with error: http: Server closed"}

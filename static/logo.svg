@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Blue robot chat logo">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a1a4a"/>
+      <stop offset="100%" stop-color="#0d6efd"/>
+    </linearGradient>
+    <linearGradient id="bot-face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f5f9ff"/>
+      <stop offset="100%" stop-color="#dbe9ff"/>
+    </linearGradient>
+    <linearGradient id="bot-body" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7fb5ff"/>
+      <stop offset="100%" stop-color="#0d6efd"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9bc6ff"/>
+      <stop offset="100%" stop-color="#0b5ed7"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="128" height="128" rx="24" fill="url(#bg)"/>
+  <g transform="translate(16,18)">
+    <rect x="22" y="-6" width="52" height="14" rx="7" fill="url(#accent)" stroke="#082f73" stroke-width="2"/>
+    <circle cx="30" cy="-14" r="8" fill="url(#accent)" stroke="#082f73" stroke-width="3"/>
+    <circle cx="66" cy="-14" r="8" fill="url(#accent)" stroke="#082f73" stroke-width="3"/>
+
+    <rect x="0" y="14" width="96" height="74" rx="26" fill="url(#bot-face)" stroke="#0b46b5" stroke-width="4"/>
+    <rect x="-8" y="36" width="16" height="30" rx="8" fill="url(#bot-body)" stroke="#0b46b5" stroke-width="2"/>
+    <rect x="88" y="36" width="16" height="30" rx="8" fill="url(#bot-body)" stroke="#0b46b5" stroke-width="2"/>
+
+    <circle cx="30" cy="48" r="11" fill="#082f73"/>
+    <circle cx="66" cy="48" r="11" fill="#082f73"/>
+    <circle cx="30" cy="48" r="4" fill="#8dd1ff"/>
+    <circle cx="66" cy="48" r="4" fill="#8dd1ff"/>
+
+    <path d="M20 72 C32 86 64 86 76 72" fill="none" stroke="#0b5ed7" stroke-width="8" stroke-linecap="round"/>
+
+    <rect x="28" y="94" width="40" height="12" rx="6" fill="url(#bot-body)" stroke="#082f73" stroke-width="3"/>
+  </g>
+</svg>

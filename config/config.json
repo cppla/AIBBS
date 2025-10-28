@@ -1,0 +1,81 @@
+{
+  "app": {
+    "AppPort": "8080",
+    "JWTSecret": "replace-with-strong-secret",
+    "RateLimitPerMinute": 60,
+    "SigninRewardPoints": 10,
+    "AllowedOrigins": ["*"],
+    "AllowedCountry": ["中国", "美国", "日本", "新加坡"],
+    "DenyCountry": ["印度"],
+    "OAuthRedirectBase": "http://localhost:8080",
+    "AdminUsernames": ["root", "admin"],
+    "UploadsSelfDestructEnabled": true,
+    "UploadsSelfDestructMinutes": 60
+  },
+  "database": {
+    "DBHost": "127.0.0.1",
+    "DBPort": "3306",
+    "DBUser": "user",
+    "DBPassword": "password",
+    "DBName": "aibbs",
+    "DatabaseURI": "user:password@tcp(127.0.0.1:3306)/aibbs?charset=utf8mb4&parseTime=True&loc=Local"
+  },
+  "redis": {
+    "RedisHost": "127.0.0.1",
+    "RedisPort": 6379,
+    "RedisDB": 2,
+    "RedisPassword": "password"
+  },
+  "oauth": {
+    "GitHubClientID": "",
+    "GitHubClientSecret": "",
+    "GoogleClientID": "",
+    "GoogleClientSecret": "",
+    "TelegramBotToken": ""
+  },
+  "log": {
+    "Level": "error",
+    "Path": "logs/aibbs.log",
+    "GinMode": "release",
+    "GinPath": "logs/go_gin.log",
+    "MaxSizeMB": 100,
+    "MaxBackups": 3,
+    "MaxAgeDays": 7,
+    "Compress": true
+  },
+  "footer": {
+    "FooterCol1Title": "声明",
+    "FooterCol1HTML": "<p>这个是网站的声明</p>",
+    "FooterCol2Title": "友链",
+    "FooterLink1Name": "百度",
+    "FooterLink1URL": "https://www.baidu.com",
+    "FooterLink2Name": "谷歌",
+    "FooterLink2URL": "https://www.google.com",
+    "FooterLink3Name": "ChatGPT",
+    "FooterLink3URL": "https://chatgpt.com",
+    "FooterCol3Title": "联系",
+    "FooterTelegramURL": "https://github.com/cppla/AIBBS",
+    "FooterEmailLink": "mailto:",
+    "FooterBroadcastURL": "https://github.com/cppla/AIBBS"
+  },
+  "notice": {
+    "Title": "公告",
+    "HTML": "AIBBS，全球第一个AI驱动的论坛系统，没有一行代码来自于人类。<br/>你可以在地址：github.com/cppla/AIBBS 获取源代码，并用AI Agent加入开发<br/>技术论坛，请遵守法律法规，不要发任何违法内容"
+  },
+  "smtp": {
+    "SMTPHost": "",
+    "SMTPPort": 587,
+    "SMTPUsername": "",
+    "SMTPPassword": "",
+    "SMTPFrom": "",
+    "SMTPFromName": "AIBBS重要通知",
+    "SMTPTLS": true
+  },
+  "register": {
+    "CaptchaEnabled": true,
+    "MaxPerIPPerDay": 5,
+    "AttemptCooldownSec": 10,
+    "FailedMaxPerIPPerHour": 20,
+    "TempBanMinutes": 60
+  }
+}

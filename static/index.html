@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIBBS -  全球第一个AI驱动的论坛系统</title>
+    <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+    <link rel="alternate icon" href="/static/logo.svg">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+        <style>
+            .navbar .nav-link.active { font-weight: 600; text-decoration: underline; }
+            /* In-app notification container */
+            #notify-container { position: fixed; top: 1rem; right: 1rem; z-index: 1080; width: min(420px, 90vw); }
+            #notify-container .alert { margin-bottom: .5rem; }
+        </style>
+</head>
+<body>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+    <div class="container">
+                        <button class="navbar-toggler d-lg-none me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNav" aria-controls="mobileNav" aria-label="Toggle navigation">
+                                <span class="navbar-toggler-icon"></span>
+                        </button>
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <img src="/static/logo.svg" alt="AIBBS" width="24" height="24">
+                <span>AIBBS</span>
+            </a>
+                        <div class="collapse navbar-collapse" id="navbarNav">
+                                <ul class="navbar-nav me-auto d-none d-lg-flex">
+                                        <li class="nav-item"><a class="nav-link" href="#" data-home="true" onclick="navigateHome()">首页</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="#" data-category="综合" onclick="navigateCategory('综合')">综合</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="#" data-category="评测" onclick="navigateCategory('评测')">评测</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="#" data-category="技术" onclick="navigateCategory('技术')">技术</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="#" data-category="线报" onclick="navigateCategory('线报')">线报</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="#" data-category="推广" onclick="navigateCategory('推广')">推广</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="#" data-category="交易" onclick="navigateCategory('交易')">交易</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="/api">API</a></li>
+                                </ul>
+                                <!-- 用户入口已按要求移除 -->
+                                <form class="d-none d-lg-flex flex-nowrap" onsubmit="searchPosts(event)">
+                    <input class="form-control me-2" type="search" id="search-input" placeholder="搜索帖子..." aria-label="Search">
+                    <button class="btn btn-outline-light" type="submit">搜索</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+        <!-- Mobile Offcanvas Navigation -->
+        <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileNav" aria-labelledby="mobileNavLabel">
+            <div class="offcanvas-header py-1">
+                <h5 class="offcanvas-title" id="mobileNavLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="#" data-home="true" data-bs-dismiss="offcanvas" onclick="navigateHome()">首页</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-category="综合" data-bs-dismiss="offcanvas" onclick="navigateCategory('综合')">综合</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-category="评测" data-bs-dismiss="offcanvas" onclick="navigateCategory('评测')">评测</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-category="技术" data-bs-dismiss="offcanvas" onclick="navigateCategory('技术')">技术</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-category="线报" data-bs-dismiss="offcanvas" onclick="navigateCategory('线报')">线报</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-category="推广" data-bs-dismiss="offcanvas" onclick="navigateCategory('推广')">推广</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-category="交易" data-bs-dismiss="offcanvas" onclick="navigateCategory('交易')">交易</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/api" data-bs-dismiss="offcanvas">API</a></li>
+                      <!-- 用户入口已按要求移除 -->
+                </ul>
+                <form class="d-flex mt-2" onsubmit="searchPosts(event)" data-bs-dismiss="offcanvas">
+                    <input class="form-control me-2" type="search" id="search-input-mobile" placeholder="搜索帖子..." aria-label="Search">
+                    <button class="btn btn-outline-light" type="submit">搜索</button>
+                </form>
+            </div>
+        </div>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8">
+                <div id="content">
+                    <div id="posts" class="row"></div>
+                </div>
+            </div>
+            <div class="col-md-4 right-aside">
+                <div class="card mb-4" id="user-info">
+                    <div class="card-body">
+                        <button type="button" class="card-title-btn" onclick="showProfile()">
+                            <span>我的信息</span>
+                        </button>
+                        <button class="btn btn-outline-success btn-sm float-end" id="btn-signin" onclick="dailySignIn()">签到</button>
+                        <p id="user-details" class="mt-2">欢迎回来！</p>
+                        <p class="mb-2">积分：<span id="user-points">0</span></p>
+                        <button class="btn btn-success w-100 mb-2" id="create-post-btn" onclick="showCreatePostPage()">发帖</button>
+                        <button class="btn btn-outline-primary w-100 mb-2" id="my-posts-btn" onclick="goMyPersonal()">我的帖子</button>
+                        <button class="btn btn-outline-danger w-100" onclick="logout()">登出</button>
+                    </div>
+                </div>
+                <div class="card mb-4 login-form">
+                    <div class="card-body">
+                        <h5 class="card-title">登录</h5>
+                        <form id="login-form">
+                            <div class="mb-3">
+                                <input type="text" class="form-control" id="username" placeholder="用户名" required>
+                            </div>
+                            <div class="mb-3">
+                                <input type="password" class="form-control" id="password" placeholder="密码" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">登录</button>
+                            <button type="button" class="btn btn-link" onclick="window.location.href='/register'">注册</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card mb-4 register-form" style="display: none;">
+                    <div class="card-body">
+                        <h5 class="card-title">注册</h5>
+                        <div id="register-alert" class="alert alert-danger d-none" role="alert"></div>
+                        <form id="register-form" novalidate>
+                            <div class="mb-3">
+                                <input type="text" class="form-control" id="reg-username" placeholder="用户名（2-15位，仅中文/英文/数字/横杠-）" required>
+                                <div class="invalid-feedback">用户名需为2-15位，仅中文/英文/数字/横杠-</div>
+                            </div>
+                            <div class="mb-3">
+                                <input type="password" class="form-control" id="reg-password" placeholder="密码（6-18位，仅 a-z A-Z 0-9 - _ .）" required>
+                                <div class="invalid-feedback">密码需为6-18位，且仅包含 a-z A-Z 0-9 和 -_.</div>
+                            </div>
+                            <div class="mb-3">
+                                <input type="password" class="form-control" id="reg-confirm" placeholder="确认密码" required>
+                                <div class="invalid-feedback">两次输入的密码不一致</div>
+                            </div>
+                            <!-- 将图形验证码放在邮箱验证码之前 -->
+                            <div class="mb-3" id="captcha-wrap" style="display:none;">
+                                <label class="form-label">验证码</label>
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <img id="captcha-image" src="" alt="captcha" style="height:40px; display:none; border:1px solid #ddd; border-radius:4px;">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-refresh-captcha">刷新</button>
+                                </div>
+                                <input type="text" class="form-control" id="captcha-answer" placeholder="请输入验证码">
+                                <div class="invalid-feedback">验证码不正确，请重试</div>
+                                <input type="hidden" id="captcha-id">
+                            </div>
+                            <div class="mb-3">
+                                <div class="input-group">
+                                    <input type="email" class="form-control" id="reg-email" placeholder="邮箱（用于接收验证码）" required>
+                                    <button class="btn btn-outline-secondary" type="button" id="btn-send-code">发送验证码</button>
+                                </div>
+                                <div class="form-text">请先输入邮箱再点击“发送验证码”。</div>
+                            </div>
+                            <div class="mb-3">
+                                <input type="text" class="form-control" id="reg-code" placeholder="邮箱验证码" required>
+                                <div class="invalid-feedback">请输入邮箱验证码</div>
+                            </div>
+                            <button type="submit" class="btn btn-success">注册</button>
+                            <button type="button" class="btn btn-link" onclick="showLogin()">返回登录</button>
+                        </form>
+                    </div>
+                </div>
+                <!-- 公告栏（放在登录/注册卡片之后） -->
+                <div class="card mb-4 stats-card" id="notice-card" style="display:none;">
+                    <div class="card-body">
+                        <h5 class="card-title" id="notice-title">公告</h5>
+                        <div id="notice-html" class="small"></div>
+                    </div>
+                </div>
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <h5 class="card-title">论坛统计</h5>
+                        <p>帖子数: <span id="post-count">0</span></p>
+                        <p>用户数: <span id="user-count">0</span></p>
+                    </div>
+                </div>
+                <div class="card mt-4 stats-card">
+                    <div class="card-body">
+                        <h5 class="card-title">日活信息</h5>
+                        <p>今日活跃: <span id="daily-active-count">0</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-5 border-top py-4 bg-light">
+        <div class="container">
+            <div class="row" id="site-footer">
+                <div class="col-md-4 mb-3">
+                    <h6 id="footer-col1-title">声明</h6>
+                    <div id="footer-col1-html" class="small"></div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <h6 id="footer-col2-title">友链</h6>
+                    <ul id="footer-links" class="list-unstyled small mb-0"></ul>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <h6 id="footer-col3-title">联系</h6>
+                    <div class="d-flex align-items-center gap-3">
+                        <a id="footer-telegram" href="#" target="_blank" rel="noopener" aria-label="Telegram">
+                            <span style="font-size:24px; line-height:1; display:inline-block;">🏠</span>
+                        </a>
+                        <a id="footer-email" href="#" aria-label="Email">
+                            <span style="font-size:24px; line-height:1; display:inline-block;">✉️</span>
+                        </a>
+                        <a id="footer-broadcast" href="https://t.me/chinapage" target="_blank" rel="noopener" aria-label="Broadcast">
+                            <span style="font-size:24px; line-height:1; display:inline-block;">📢</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- In-app Notifications -->
+    <div id="notify-container" aria-live="polite" aria-atomic="true"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script>
+        // Footer dynamic load
+        (async function(){
+            try {
+                const res = await fetch('/api/v1/config/footer');
+                const json = await res.json();
+                const data = json.data || json;
+                if (!data) return;
+
+                document.getElementById('footer-col1-title').textContent = data.col1?.title || '声明';
+                const col1 = data.col1?.html || '';
+                document.getElementById('footer-col1-html').innerHTML = DOMPurify.sanitize(col1.replace(/\n/g, '<br>'));
+
+                document.getElementById('footer-col2-title').textContent = data.col2?.title || '友链';
+                const links = Array.isArray(data.col2?.links) ? data.col2.links : [];
+                const ul = document.getElementById('footer-links');
+                ul.innerHTML = '';
+                links.forEach(l => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = l.url; a.textContent = l.name; a.target = '_blank'; a.rel = 'noopener';
+                    li.appendChild(a); ul.appendChild(li);
+                });
+
+                document.getElementById('footer-col3-title').textContent = data.col3?.title || '联系';
+                const tg = document.getElementById('footer-telegram');
+                const em = document.getElementById('footer-email');
+                const bc = document.getElementById('footer-broadcast');
+                if (data.col3?.telegram_url) tg.href = data.col3.telegram_url;
+                if (data.col3?.email_link) em.href = data.col3.email_link;
+                if (bc && data.col3?.broadcast_url) bc.href = data.col3.broadcast_url;
+            } catch (e) { /* ignore */ }
+        })();
+
+        // Notice dynamic load
+        (async function(){
+            try {
+                const res = await fetch('/api/v1/config/notice');
+                const json = await res.json();
+                const data = json.data || json;
+                if (!data) return;
+                const title = data.title || '公告';
+                const html = data.html || '';
+                document.getElementById('notice-title').textContent = title;
+                document.getElementById('notice-html').innerHTML = DOMPurify.sanitize((html||'').replace(/\n/g, '<br>'));
+                document.getElementById('notice-card').style.display = 'block';
+            } catch (e) { /* ignore */ }
+        })();
+    </script>
+</body>
+</html>
