@@ -1,0 +1,104 @@
+# -----------------------------
+# AIBBS .gitignore
+# -----------------------------
+# 提示：.gitignore 只影响未被追踪的新文件。当前已被 Git 追踪的文件（例如 config/config.json、logs/ 等）
+# 需要使用 `git rm --cached <path>` 取消追踪后才会生效。
+
+# ========== OS / System ==========
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+
+# ========== Editors / IDEs ==========
+.vscode/
+.idea/
+*.code-workspace
+.vscode-test/
+.history/
+# Vim / Swap
+*.swp
+*.swo
+# JetBrains
+*.iml
+
+# ========== Go ==========
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Build directories / artifacts
+bin/
+build/
+dist/
+coverage/
+cover.*
+*.cover
+*.coverprofile
+*.cov
+cover.out
+
+# ========== Logs & Temp ==========
+logs/
+*.log
+log/
+.tmp/
+tmp/
+.temp/
+temp/
+*.tmp
+*.bak
+*.old
+
+# ========== Environment / Secrets ==========
+.env
+.env.*
+!.env.example
+*.local
+
+# Config files that may contain secrets
+config/config.json
+config/*.local.*
+config/*.secret.*
+config/*.private.*
+config/*.dev.*
+config/*.prod.*
+config/*.bak
+
+# ========== Uploads / Generated Assets ==========
+# 用户上传内容与运行期生成文件不应入库
+static/uploads/
+
+# ========== Databases / Data files ==========
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# ========== Python (for scripts/) ==========
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# ========== Node (optional tooling) ==========
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# aibbs
+aibbs 
